@@ -5,6 +5,7 @@
 }
 .markdown-body .code-block pre {
   margin-bottom: 0;
+  tab-size: 4;
 }
 .markdown-body pre code.hljs {
   background: transparent;
