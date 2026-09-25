@@ -7,6 +7,7 @@ A small, fast Markdown editor for Linux: Tauri 2 + CodeMirror 6 + markdown-it.
   Mermaid diagrams, and highlight.js syntax highlighting for fenced code (all languages)
 - Tabs, a sidebar listing the Markdown files in the current file's folder (live-updated)
 - Source / Split / Preview modes with synchronized scrolling
+- Font settings (toolbar **Aa**): typeface and size for the editor and the preview, from your installed fonts
 - One-click export to a standalone `.html` next to the file (styles inlined, images embedded)
 - Reloads files changed on disk, and asks before overwriting when you have unsaved edits
 

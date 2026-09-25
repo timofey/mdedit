@@ -87,6 +87,25 @@ fn list_md_files(dir: String) -> Result<Vec<MdFile>, String> {
     Ok(files)
 }
 
+/// Installed font families (via fontconfig), sorted and de-duplicated.
+/// `mono` limits the list to monospaced fonts.
+#[tauri::command]
+fn list_fonts(mono: bool) -> Vec<String> {
+    let pattern = if mono { ":spacing=mono" } else { ":" };
+    let Ok(out) = std::process::Command::new("fc-list").args([pattern, "family"]).output() else {
+        return Vec::new();
+    };
+    let mut families: Vec<String> = String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .filter_map(|l| l.split(',').next())
+        .map(|f| f.trim().replace('\\', ""))
+        .filter(|f| !f.is_empty() && !f.starts_with('.'))
+        .collect();
+    families.sort_by_key(|f| f.to_lowercase());
+    families.dedup();
+    families
+}
+
 /// Replaces the set of watched directories (non-recursive). Changes are emitted as `fs-changed`.
 #[tauri::command]
 fn watch_dirs(app: AppHandle, state: State<AppState>, dirs: Vec<String>) -> Result<(), String> {
@@ -138,6 +157,7 @@ pub fn run() {
             read_file,
             write_file,
             list_md_files,
+            list_fonts,
             watch_dirs
         ])
         .run(tauri::generate_context!())

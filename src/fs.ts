@@ -51,3 +51,5 @@ export function resolvePath(base: string, rel: string): string {
 export function hasUrlScheme(href: string): boolean {
   return /^[a-z][a-z0-9+.-]*:/i.test(href) && !href.startsWith("file:");
 }
+
+export const listFonts = (mono: boolean) => invoke<string[]>("list_fonts", { mono });

@@ -13,6 +13,7 @@ import { Preview } from "./preview";
 import { ScrollSync } from "./scrollsync";
 import { Sidebar } from "./sidebar";
 import { ViewModes } from "./viewmode";
+import { FontSettingsPanel } from "./fonts";
 import { exportHtml } from "./export";
 import { previewCss } from "./styles";
 import { isDirty, renderTabBar, tabName, textOf, type Tab } from "./tabs";
@@ -58,6 +59,11 @@ const modes = new ViewModes($("panes"), $("mode-switch"), $("splitter"), () => {
   sync.invalidate();
   if (modes.showsPreview && previewStale) renderNow();
   if (modes.mode === "split") sync.syncFromEditor();
+});
+
+new FontSettingsPanel($("btn-fonts"), $("font-panel"), () => {
+  view.requestMeasure();
+  sync.invalidate();
 });
 
 // ---------------------------------------------------------------- helpers

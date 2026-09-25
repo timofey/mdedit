@@ -43,10 +43,10 @@ const highlightStyle = HighlightStyle.define([
 
 // Editor chrome; colors come from the CSS variables in app.css.
 const theme = EditorView.theme({
-  "&": { height: "100%", flex: "1", backgroundColor: "var(--bg)", color: "var(--fg)", fontSize: "calc(14px * var(--zoom))" },
+  "&": { height: "100%", flex: "1", backgroundColor: "var(--bg)", color: "var(--fg)", fontSize: "calc(var(--editor-size, 14px) * var(--zoom))" },
   "&.cm-focused": { outline: "none" },
   ".cm-scroller": {
-    fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", "DejaVu Sans Mono", ui-monospace, monospace',
+    fontFamily: "var(--editor-font, monospace)",
     lineHeight: "1.55",
   },
   ".cm-content": { padding: "16px 0 40vh", caretColor: "var(--fg)" },

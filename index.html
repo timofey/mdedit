@@ -19,6 +19,33 @@
         <button data-mode="split" title="Source + preview (Ctrl+2)">Split</button>
         <button data-mode="preview" title="Preview only (Ctrl+3)">Preview</button>
       </div>
+      <div class="font-menu">
+        <button id="btn-fonts" title="Fonts">Aa</button>
+        <div id="font-panel" hidden>
+          <div class="font-row">
+            <label for="editor-font">Editor</label>
+            <select id="editor-font"><option value="">Default</option></select>
+            <div class="stepper">
+              <button data-size="editor:-1" title="Smaller">−</button>
+              <span id="editor-size"></span>
+              <button data-size="editor:1" title="Larger">+</button>
+            </div>
+          </div>
+          <div class="font-row">
+            <label for="preview-font">Preview</label>
+            <select id="preview-font"><option value="">Default</option></select>
+            <div class="stepper">
+              <button data-size="preview:-1" title="Smaller">−</button>
+              <span id="preview-size"></span>
+              <button data-size="preview:1" title="Larger">+</button>
+            </div>
+          </div>
+          <div class="font-footer">
+            <span>Code in the preview uses the editor font.</span>
+            <button id="fonts-reset">Reset</button>
+          </div>
+        </div>
+      </div>
       <div class="spacer"></div>
       <button id="btn-export" class="primary" title="Export to HTML next to the file (Ctrl+E)">Export HTML</button>
     </header>
