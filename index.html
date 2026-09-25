@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>mdedit</title>
+  </head>
+  <body>
+    <header id="toolbar">
+      <button id="btn-sidebar" class="icon-btn" title="Toggle sidebar (Ctrl+B)">☰</button>
+      <div class="group">
+        <button id="btn-new" title="New file (Ctrl+N)">New</button>
+        <button id="btn-open" title="Open file (Ctrl+O)">Open</button>
+        <button id="btn-save" title="Save (Ctrl+S)">Save</button>
+      </div>
+      <div class="group segmented" id="mode-switch">
+        <button data-mode="source" title="Source only (Ctrl+1)">Source</button>
+        <button data-mode="split" title="Source + preview (Ctrl+2)">Split</button>
+        <button data-mode="preview" title="Preview only (Ctrl+3)">Preview</button>
+      </div>
+      <div class="spacer"></div>
+      <button id="btn-export" class="primary" title="Export to HTML next to the file (Ctrl+E)">Export HTML</button>
+    </header>
+    <div id="body">
+      <aside id="sidebar">
+        <div id="sidebar-header"></div>
+        <div id="sidebar-list"></div>
+      </aside>
+      <div id="workspace">
+        <nav id="tabbar"></nav>
+        <div id="disk-banner" hidden>
+          <span>This file changed on disk.</span>
+          <button id="btn-reload">Reload</button>
+          <button id="btn-keep">Keep my version</button>
+        </div>
+        <main id="panes">
+          <section id="editor-pane"></section>
+          <div id="splitter"></div>
+          <section id="preview-pane"><article id="preview" class="markdown-body"></article></section>
+        </main>
+      </div>
+    </div>
+    <div id="toast" hidden></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

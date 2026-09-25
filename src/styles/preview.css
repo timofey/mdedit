@@ -1,0 +1,78 @@
+/* Shared by the in-app preview and exported HTML. */
+.markdown-body .code-block {
+  position: relative;
+  margin-bottom: 16px;
+}
+.markdown-body .code-block pre {
+  margin-bottom: 0;
+}
+.markdown-body pre code.hljs {
+  background: transparent;
+  padding: 0;
+  display: inline;
+  overflow: visible;
+}
+.markdown-body .code-lang {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  font-size: 11px;
+  opacity: 0.55;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+.markdown-body .copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--borderColor-default, #d0d7de);
+  background: var(--bgColor-default, #fff);
+  color: var(--fgColor-default, #1f2328);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.markdown-body .code-block:hover .copy-btn {
+  opacity: 1;
+}
+.markdown-body .code-block:hover .code-lang {
+  opacity: 0;
+}
+.markdown-body pre.front-matter {
+  opacity: 0.75;
+  border-left: 3px solid var(--borderColor-default, #d0d7de);
+}
+.markdown-body .mermaid-block {
+  margin-bottom: 16px;
+  text-align: center;
+  overflow-x: auto;
+}
+.markdown-body .mermaid-block svg {
+  max-width: 100%;
+  height: auto;
+}
+.markdown-body .mermaid-error {
+  color: var(--fgColor-danger, #d1242f);
+  font-size: 12px;
+  text-align: left;
+  white-space: pre-wrap;
+}
+.markdown-body .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.markdown-body .task-list-item input[type="checkbox"] {
+  margin: 0 0.35em 0.2em -1.4em;
+  vertical-align: middle;
+}
+.markdown-body .task-list-item {
+  list-style-type: none;
+}
+.markdown-body details > summary {
+  display: list-item;
+  cursor: pointer;
+}
