@@ -122,9 +122,31 @@ and for the preview. Code blocks in the preview use the editor font.
 
 ## Installation
 
-There are no prebuilt packages yet, so you build from source. It takes a couple of minutes.
+### Download
 
-### 1. Install build dependencies
+Get the latest build from the [Releases page](https://github.com/timofey/mdedit/releases/latest):
+
+| Platform | File |
+|---|---|
+| Debian / Ubuntu | `mdedit_*_amd64.deb`, installed with `sudo apt install ./mdedit_*.deb` |
+| Fedora / openSUSE | `mdedit-*.x86_64.rpm` |
+| Any Linux distro | `mdedit_*_amd64.AppImage` (`chmod +x`, then run it) |
+| macOS (Intel and Apple Silicon) | `mdedit_*_universal.dmg` |
+
+**macOS:** the app isn't signed with an Apple Developer ID, so macOS blocks the first launch.
+After dragging mdedit to Applications, run:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/mdedit.app
+```
+
+You can also right-click the app, choose **Open**, and confirm.
+
+### Build from source
+
+Building from source takes a couple of minutes.
+
+#### 1. Install build dependencies
 
 You need [Rust](https://rustup.rs) (stable) and Node.js 20+. On Linux you also need the WebKitGTK development packages:
 
@@ -164,7 +186,7 @@ brew install node rustup && rustup-init
 ```
 </details>
 
-### 2. Build and install (Linux)
+#### 2. Build and install (Linux)
 
 ```sh
 git clone https://github.com/timofey/mdedit.git
@@ -185,7 +207,7 @@ To make mdedit the default app for Markdown files:
 MDEDIT_SET_DEFAULT=1 ./scripts/install-desktop.sh
 ```
 
-### Build on macOS
+#### 2. Build on macOS
 
 ```sh
 git clone https://github.com/timofey/mdedit.git
@@ -201,7 +223,7 @@ To use it from the terminal, symlink the binary inside the bundle:
 ln -s /Applications/mdedit.app/Contents/MacOS/mdedit /usr/local/bin/mdedit
 ```
 
-### Other options (Linux)
+#### Other options (Linux)
 
 - **Debian package:** `npm install && npx tauri build` writes a `.deb` to `src-tauri/target/release/bundle/deb/`.
 - **Desktop entry only:** `./scripts/install-desktop.sh [path/to/mdedit]` regenerates just the `.desktop` file and icons, for example after moving the binary.
@@ -268,6 +290,21 @@ npm run tauri dev -- -- path/to/file.md   # run with hot reload
 npm test                                  # renderer tests (vitest)
 npm run build                             # type-check and build the frontend
 ```
+
+### Releasing
+
+Releases are built by GitHub Actions ([`.github/workflows/release.yml`](.github/workflows/release.yml)):
+
+1. Run `scripts/release.sh 0.2.0` on an up-to-date, clean `main`. It sets the version in
+   `package.json` and `Cargo.toml`, runs the tests, commits, creates the `v0.2.0` tag,
+   and then asks whether to push.
+2. Pushing the tag starts the **Release** workflow. It builds the Linux `.deb`, `.rpm`
+   and `.AppImage`, plus a universal macOS `.dmg`, and attaches them to a
+   **draft** release.
+3. Check the draft under *Releases*, edit the notes, and click **Publish**.
+
+The workflow refuses to build if the tag and the version files disagree. To rebuild an
+existing tag, run the workflow manually from the *Actions* tab and enter the tag.
 
 ```
 src/

@@ -1,0 +1,109 @@
+# Builds release packages and attaches them to a draft GitHub Release.
+#
+# Trigger: push a version tag (see scripts/release.sh), e.g.
+#   git tag v0.2.0 && git push origin v0.2.0
+# Output: a *draft* release with Linux (.deb, .rpm, .AppImage) and a universal
+# macOS (.dmg, Intel + Apple Silicon) build. Review it on GitHub, then publish.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build (e.g. v0.2.0)"
+        required: true
+
+permissions:
+  contents: write # create the release and upload assets
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x64
+            # oldest supported runner = oldest glibc = widest distro compatibility
+            runner: ubuntu-22.04
+            args: --bundles deb,rpm,appimage
+          - name: macos-universal
+            runner: macos-latest
+            args: --target universal-apple-darwin --bundles app,dmg
+
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Check tag matches package version
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          cargo_version="$(sed -n 's/^version = "\(.*\)"/\1/p' src-tauri/Cargo.toml | head -1)"
+          if [[ "$TAG" != "v$version" || "$cargo_version" != "$version" ]]; then
+            echo "::error::Tag $TAG, package.json $version and Cargo.toml $cargo_version must match (use scripts/release.sh)"
+            exit 1
+          fi
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - run: npm test
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ env.TAG }}
+          releaseName: mdedit ${{ env.TAG }}
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+          releaseBody: |
+            ## Downloads
+
+            | Platform | File |
+            |---|---|
+            | Debian / Ubuntu | `mdedit_*_amd64.deb` (install with `sudo apt install ./mdedit_*.deb`) |
+            | Fedora / openSUSE | `mdedit-*.x86_64.rpm` |
+            | Any Linux distro | `mdedit_*_amd64.AppImage` (`chmod +x` and run) |
+            | macOS (Intel and Apple Silicon) | `mdedit_*_universal.dmg` |
+
+            **macOS:** the app isn't signed with an Apple Developer ID, so macOS blocks the
+            first launch. After moving mdedit to Applications, run:
+
+            ```sh
+            xattr -dr com.apple.quarantine /Applications/mdedit.app
+            ```
+
+            You can also right-click the app, choose **Open**, and confirm.
