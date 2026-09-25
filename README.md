@@ -4,10 +4,10 @@
 
 # mdedit
 
-**A small, fast Markdown editor for Linux and macOS, with an accurate live preview.**
+**A small, fast Markdown editor for Linux, macOS and Windows, with an accurate live preview.**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Platform: Linux | macOS](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-informational)
+![Platform: Linux | macOS | Windows](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-informational)
 ![Built with Tauri 2](https://img.shields.io/badge/built%20with-Tauri%202-24c8db)
 ![Binary size](https://img.shields.io/badge/binary-~7.5%20MB-success)
 
@@ -128,10 +128,15 @@ Get the latest build from the [Releases page](https://github.com/timofey/mdedit/
 
 | Platform | File |
 |---|---|
+| Windows 10/11 | `mdedit_*_x64-setup.exe` (installer), or `mdedit_*_x64-portable.exe` (no install) |
+| macOS (Intel and Apple Silicon) | `mdedit_*_universal.dmg` |
 | Debian / Ubuntu | `mdedit_*_amd64.deb`, installed with `sudo apt install ./mdedit_*.deb` |
 | Fedora / openSUSE | `mdedit-*.x86_64.rpm` |
 | Any Linux distro | `mdedit_*_amd64.AppImage` (`chmod +x`, then run it) |
-| macOS (Intel and Apple Silicon) | `mdedit_*_universal.dmg` |
+| Linux, plain binary | `mdedit-*-linux-x86_64.tar.gz` (needs WebKitGTK 4.1 installed) |
+
+**Windows:** the installer isn't code-signed, so SmartScreen may show "Windows protected your PC".
+Click **More info**, then **Run anyway**.
 
 **macOS:** the app isn't signed with an Apple Developer ID, so macOS blocks the first launch.
 After dragging mdedit to Applications, run:
@@ -148,7 +153,7 @@ Building from source takes a couple of minutes.
 
 #### 1. Install build dependencies
 
-You need [Rust](https://rustup.rs) (stable) and Node.js 20+. On Linux you also need the WebKitGTK development packages:
+You need [Rust](https://rustup.rs) (stable) and Node.js 20+, plus some platform tools:
 
 <details open>
 <summary>Arch Linux</summary>
@@ -184,6 +189,26 @@ sudo dnf group install c-development
 xcode-select --install          # Command Line Tools
 brew install node rustup && rustup-init
 ```
+</details>
+
+<details>
+<summary>Windows</summary>
+
+In PowerShell:
+
+```powershell
+winget install --id Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+winget install --id Rustlang.Rustup
+winget install --id OpenJS.NodeJS.LTS
+winget install --id Git.Git
+```
+
+Reopen the terminal afterwards so the tools are on `PATH`.
+
+- **WebView2:** it ships with Windows 11 and current Windows 10. If it's missing, run
+  `winget install Microsoft.EdgeWebView2Runtime`.
+- **Script policy:** if `npm` fails with "running scripts is disabled", run
+  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, or use `cmd.exe`.
 </details>
 
 #### 2. Build and install (Linux)
@@ -222,6 +247,18 @@ To use it from the terminal, symlink the binary inside the bundle:
 ```sh
 ln -s /Applications/mdedit.app/Contents/MacOS/mdedit /usr/local/bin/mdedit
 ```
+
+#### 2. Build on Windows
+
+```powershell
+git clone https://github.com/timofey/mdedit.git
+cd mdedit
+npm ci
+npx tauri build --bundles nsis
+```
+
+This builds an installer at `src-tauri\target\release\bundle\nsis\mdedit_*_x64-setup.exe`.
+The plain executable `src-tauri\target\release\mdedit.exe` also runs without installing.
 
 #### Other options (Linux)
 
@@ -271,7 +308,7 @@ On macOS, use <kbd>⌘</kbd> in place of <kbd>Ctrl</kbd>. Tab switching stays on
 
 | Layer | Choice |
 |---|---|
-| App shell | [Tauri 2](https://tauri.app) (Rust) using the system webview (WebKitGTK on Linux, WKWebView on macOS), with no bundled browser |
+| App shell | [Tauri 2](https://tauri.app) (Rust) using the system webview (WebKitGTK on Linux, WKWebView on macOS, WebView2 on Windows), with no bundled browser |
 | Editor | [CodeMirror 6](https://codemirror.net) with Markdown and nested code-language highlighting |
 | Markdown | [markdown-it](https://github.com/markdown-it/markdown-it) and plugins |
 | Code highlighting | [highlight.js](https://highlightjs.org) |
@@ -287,24 +324,10 @@ and handles file I/O, the folder watcher, the font list, and single-instance han
 ```sh
 npm install
 npm run tauri dev -- -- path/to/file.md   # run with hot reload
-npm test                                  # renderer tests (vitest)
+npm test                                  # unit tests (vitest)
+(cd src-tauri && cargo test)              # Rust tests
 npm run build                             # type-check and build the frontend
 ```
-
-### Releasing
-
-Releases are built by GitHub Actions ([`.github/workflows/release.yml`](.github/workflows/release.yml)):
-
-1. Run `scripts/release.sh 0.2.0` on an up-to-date, clean `main`. It sets the version in
-   `package.json` and `Cargo.toml`, runs the tests, commits, creates the `v0.2.0` tag,
-   and then asks whether to push.
-2. Pushing the tag starts the **Release** workflow. It builds the Linux `.deb`, `.rpm`
-   and `.AppImage`, plus a universal macOS `.dmg`, and attaches them to a
-   **draft** release.
-3. Check the draft under *Releases*, edit the notes, and click **Publish**.
-
-The workflow refuses to build if the tag and the version files disagree. To rebuild an
-existing tag, run the workflow manually from the *Actions* tab and enter the tag.
 
 ```
 src/
@@ -320,9 +343,31 @@ src-tauri/src/lib.rs   Rust commands (fs, watcher, fonts, CLI args)
 scripts/               install scripts
 ```
 
+### Releasing
+
+Releases are built by GitHub Actions ([`.github/workflows/release.yml`](.github/workflows/release.yml)):
+
+1. Run `scripts/release.sh 0.2.0` on an up-to-date, clean `main`. It sets the version in
+   `package.json` and `Cargo.toml`, runs the tests, commits, creates the `v0.2.0` tag,
+   and then asks whether to push.
+2. Pushing the tag starts the **Release** workflow. It builds:
+   - Linux: `.deb`, `.rpm`, `.AppImage` and a plain-binary `.tar.gz`
+   - macOS: a universal `.dmg`
+   - Windows: an installer `.exe` and a portable `.exe`
+
+   It attaches them all to a **draft** release, using the notes in
+   [`.github/release-notes.md`](.github/release-notes.md).
+3. Check the draft under *Releases*, edit the notes, and click **Publish**.
+
+The workflow refuses to build if the tag and the version files disagree. To rebuild an
+existing tag, run the workflow manually from the *Actions* tab and enter the tag.
+
 ## Limitations
 
-- **Supported platforms:** Linux and macOS. Windows support is in progress.
+- **Platforms:** x86-64 Linux and Windows, plus macOS on Intel and Apple Silicon.
+  There are no ARM builds for Linux or Windows yet.
+- **Unsigned builds:** the Windows and macOS builds aren't code-signed, so both systems
+  warn on first launch. See [Download](#download).
 - **Install scripts:** the scripts in `scripts/` create a Linux desktop entry and are Linux-only.
 - Task-list checkboxes in the preview are read-only. Edit `[ ]` / `[x]` in the source.
 - The sidebar lists only the current folder, not subfolders.

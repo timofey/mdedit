@@ -2,8 +2,11 @@
 #
 # Trigger: push a version tag (see scripts/release.sh), e.g.
 #   git tag v0.2.0 && git push origin v0.2.0
-# Output: a *draft* release with Linux (.deb, .rpm, .AppImage) and a universal
-# macOS (.dmg, Intel + Apple Silicon) build. Review it on GitHub, then publish.
+# Output: a *draft* release with
+#   - Linux: .deb, .rpm, .AppImage and a plain-binary .tar.gz
+#   - macOS: universal .dmg (Intel + Apple Silicon)
+#   - Windows: NSIS installer .exe and a portable .exe
+# Review it on GitHub, then publish. Release notes: .github/release-notes.md
 name: Release
 
 on:
@@ -26,7 +29,27 @@ env:
   TAG: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
+  # Create the draft up front so the parallel build jobs all upload into one release
+  # instead of racing to create it.
+  draft:
+    name: create draft release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; builds will upload into it."
+          else
+            gh release create "$TAG" --draft --verify-tag \
+              --title "mdedit $TAG" --notes-file .github/release-notes.md
+          fi
+
   build:
+    needs: draft
     strategy:
       fail-fast: false
       matrix:
@@ -38,6 +61,9 @@ jobs:
           - name: macos-universal
             runner: macos-latest
             args: --target universal-apple-darwin --bundles app,dmg
+          - name: windows-x64
+            runner: windows-latest
+            args: --bundles nsis
 
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
@@ -89,21 +115,26 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-          releaseBody: |
-            ## Downloads
 
-            | Platform | File |
-            |---|---|
-            | Debian / Ubuntu | `mdedit_*_amd64.deb` (install with `sudo apt install ./mdedit_*.deb`) |
-            | Fedora / openSUSE | `mdedit-*.x86_64.rpm` |
-            | Any Linux distro | `mdedit_*_amd64.AppImage` (`chmod +x` and run) |
-            | macOS (Intel and Apple Silicon) | `mdedit_*_universal.dmg` |
+      # Plain binaries next to the installers (tauri-action only uploads bundles).
+      - name: Upload Linux binary tarball
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dir="mdedit-${TAG#v}-linux-x86_64"
+          mkdir "$dir"
+          cp src-tauri/target/release/mdedit README.md LICENSE "$dir/"
+          cp src-tauri/icons/128x128.png "$dir/mdedit.png"
+          tar -czf "$dir.tar.gz" "$dir"
+          gh release upload "$TAG" "$dir.tar.gz" --clobber
 
-            **macOS:** the app isn't signed with an Apple Developer ID, so macOS blocks the
-            first launch. After moving mdedit to Applications, run:
-
-            ```sh
-            xattr -dr com.apple.quarantine /Applications/mdedit.app
-            ```
-
-            You can also right-click the app, choose **Open**, and confirm.
+      - name: Upload Windows portable exe
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          exe="mdedit_${TAG#v}_x64-portable.exe"
+          cp src-tauri/target/release/mdedit.exe "$exe"
+          gh release upload "$TAG" "$exe" --clobber
