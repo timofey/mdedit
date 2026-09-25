@@ -14,6 +14,8 @@ A small, fast Markdown editor for Linux: Tauri 2 + CodeMirror 6 + markdown-it.
 
 ```sh
 ./scripts/install-local.sh     # builds and installs ~/.local/bin/mdedit + desktop entry
+./scripts/install-desktop.sh [binary]   # (re)generate just the .desktop entry + icons;
+                               # MDEDIT_SET_DEFAULT=1 also makes it the default for .md
 mdedit README.md notes.md      # opens files; a running instance gets new tabs
 ```
 
