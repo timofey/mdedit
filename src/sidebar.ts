@@ -30,7 +30,7 @@ export class Sidebar {
   }
 
   private render(): void {
-    this.header.textContent = this.dir ? basename(this.dir) || "/" : "No folder";
+    this.header.textContent = this.dir ? basename(this.dir) || this.dir : "No folder";
     this.header.title = this.dir ?? "";
     if (this.dir && this.files.length === 0) {
       const empty = document.createElement("div");

@@ -1,7 +1,7 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { renderMarkdown } from "./render";
 import { renderMermaid } from "./mermaid";
-import { hasUrlScheme, resolvePath, writeFile } from "./fs";
+import { fileUrl, hasUrlScheme, resolvePath, writeFile } from "./fs";
 import { previewCss, katexExportCss } from "./styles";
 
 const pageCss = `
@@ -58,7 +58,7 @@ export async function buildStandaloneHtml(markdown: string, baseDir: string, fal
     if (!src || hasUrlScheme(src)) continue;
     const path = resolvePath(baseDir, src);
     const data = await toDataUrl(convertFileSrc(path));
-    img.setAttribute("src", data ?? "file://" + encodeURI(path));
+    img.setAttribute("src", data ?? fileUrl(path));
   }
 
   const title = root.querySelector("h1")?.textContent?.trim() || fallbackTitle;
@@ -83,7 +83,7 @@ ${root.outerHTML}
 }
 
 export async function exportHtml(markdown: string, mdPath: string, baseDir: string, title: string): Promise<string> {
-  const outPath = mdPath.replace(/\.[^./]+$/, "") + ".html";
+  const outPath = mdPath.replace(/\.[^./\\]+$/, "") + ".html";
   const html = await buildStandaloneHtml(markdown, baseDir, title);
   await writeFile(outPath, html);
   return outPath;

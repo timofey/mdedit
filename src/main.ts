@@ -23,6 +23,7 @@ import {
   hasUrlScheme,
   initialFiles,
   isMarkdownPath,
+  joinPath,
   readFile,
   resolvePath,
   watchDirs,
@@ -257,7 +258,7 @@ async function saveTab(tab: Tab, saveAs = false): Promise<boolean> {
   if (!path || saveAs) {
     const chosen = await saveDialog({
       title: "Save Markdown file",
-      defaultPath: tab.path ?? `${sidebar.folder ?? ""}${sidebar.folder ? "/" : ""}${tab.untitledName}.md`,
+      defaultPath: tab.path ?? (sidebar.folder ? joinPath(sidebar.folder, `${tab.untitledName}.md`) : `${tab.untitledName}.md`),
       filters: [{ name: "Markdown", extensions: ["md", "markdown"] }],
     });
     if (!chosen) return false;

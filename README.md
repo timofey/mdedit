@@ -279,7 +279,7 @@ On macOS, use <kbd>⌘</kbd> in place of <kbd>Ctrl</kbd>. Tab switching stays on
 | Styling | [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) |
 | Sanitizing | [DOMPurify](https://github.com/cure53/DOMPurify) |
 
-The UI is plain TypeScript with no framework. The Rust side is about 165 lines
+The UI is plain TypeScript with no framework. The Rust side is under 200 lines
 and handles file I/O, the folder watcher, the font list, and single-instance handling.
 
 ## Development
@@ -322,10 +322,7 @@ scripts/               install scripts
 
 ## Limitations
 
-- **Supported platforms:** Linux and macOS. Windows hasn't been tested yet.
-- **Font list on macOS:** the typeface pickers are filled from fontconfig's `fc-list`,
-  which macOS doesn't ship. Without it the pickers only offer *Default*. Installing
-  fontconfig (`brew install fontconfig`) should fill them.
+- **Supported platforms:** Linux and macOS. Windows support is in progress.
 - **Install scripts:** the scripts in `scripts/` create a Linux desktop entry and are Linux-only.
 - Task-list checkboxes in the preview are read-only. Edit `[ ]` / `[x]` in the source.
 - The sidebar lists only the current folder, not subfolders.
