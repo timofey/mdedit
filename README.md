@@ -4,10 +4,10 @@
 
 # mdedit
 
-**A small, fast Markdown editor for Linux, with an accurate live preview.**
+**A small, fast Markdown editor for Linux and macOS, with an accurate live preview.**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Platform: Linux](https://img.shields.io/badge/platform-Linux-informational)
+![Platform: Linux | macOS](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-informational)
 ![Built with Tauri 2](https://img.shields.io/badge/built%20with-Tauri%202-24c8db)
 ![Binary size](https://img.shields.io/badge/binary-~7.5%20MB-success)
 
@@ -17,7 +17,7 @@
 
 ## Why
 
-Most Linux Markdown editors break some part of real-world documents. Code blocks
+Most Markdown editors on Linux break some part of real-world documents. Code blocks
 get mangled, tables render wrong, or the app hangs on a big file. IDE previews
 render well, but that's a lot of IDE to open for editing one README.
 
@@ -126,7 +126,7 @@ There are no prebuilt packages yet, so you build from source. It takes a couple 
 
 ### 1. Install build dependencies
 
-You need [Rust](https://rustup.rs) (stable), Node.js 20+, and the WebKitGTK development packages:
+You need [Rust](https://rustup.rs) (stable) and Node.js 20+. On Linux you also need the WebKitGTK development packages:
 
 <details open>
 <summary>Arch Linux</summary>
@@ -155,7 +155,16 @@ sudo dnf group install c-development
 ```
 </details>
 
-### 2. Build and install
+<details>
+<summary>macOS</summary>
+
+```sh
+xcode-select --install          # Command Line Tools
+brew install node rustup && rustup-init
+```
+</details>
+
+### 2. Build and install (Linux)
 
 ```sh
 git clone https://github.com/timofey/mdedit.git
@@ -176,7 +185,23 @@ To make mdedit the default app for Markdown files:
 MDEDIT_SET_DEFAULT=1 ./scripts/install-desktop.sh
 ```
 
-### Other options
+### Build on macOS
+
+```sh
+git clone https://github.com/timofey/mdedit.git
+cd mdedit
+npm install
+npx tauri build --bundles app
+```
+
+This builds `src-tauri/target/release/bundle/macos/mdedit.app`. Drag it to `/Applications`.
+To use it from the terminal, symlink the binary inside the bundle:
+
+```sh
+ln -s /Applications/mdedit.app/Contents/MacOS/mdedit /usr/local/bin/mdedit
+```
+
+### Other options (Linux)
 
 - **Debian package:** `npm install && npx tauri build` writes a `.deb` to `src-tauri/target/release/bundle/deb/`.
 - **Desktop entry only:** `./scripts/install-desktop.sh [path/to/mdedit]` regenerates just the `.desktop` file and icons, for example after moving the binary.
@@ -192,6 +217,9 @@ mdedit new-file.md          # open a file that doesn't exist yet; it's created o
 You can also drag files onto the window.
 
 ### Keyboard shortcuts
+
+On macOS, use <kbd>⌘</kbd> in place of <kbd>Ctrl</kbd>. Tab switching stays on
+<kbd>Ctrl</kbd>+<kbd>Tab</kbd>, because <kbd>⌘</kbd>+<kbd>Tab</kbd> belongs to the system.
 
 | Keys | Action |
 |---|---|
@@ -213,7 +241,7 @@ You can also drag files onto the window.
   it reloads silently. If you do have edits, a bar offers *Reload* or *Keep my version*.
 - **Preferences:** view mode, split position, sidebar, zoom, fonts, and open tabs
   are remembered between launches.
-- **NVIDIA:** WebKitGTK often draws blank or flickering windows on NVIDIA GPUs.
+- **NVIDIA (Linux):** WebKitGTK often draws blank or flickering windows on NVIDIA GPUs.
   mdedit sets `WEBKIT_DISABLE_DMABUF_RENDERER=1` by default to avoid this.
   Set the variable yourself to override it.
 
@@ -221,7 +249,7 @@ You can also drag files onto the window.
 
 | Layer | Choice |
 |---|---|
-| App shell | [Tauri 2](https://tauri.app) (Rust) using the system WebKitGTK, with no bundled browser |
+| App shell | [Tauri 2](https://tauri.app) (Rust) using the system webview (WebKitGTK on Linux, WKWebView on macOS), with no bundled browser |
 | Editor | [CodeMirror 6](https://codemirror.net) with Markdown and nested code-language highlighting |
 | Markdown | [markdown-it](https://github.com/markdown-it/markdown-it) and plugins |
 | Code highlighting | [highlight.js](https://highlightjs.org) |
@@ -257,8 +285,11 @@ scripts/               install scripts
 
 ## Limitations
 
-- mdedit is **Linux-first**. Tauri also runs on macOS and Windows, but those
-  platforms haven't been tested, and the font list relies on fontconfig.
+- **Supported platforms:** Linux and macOS. Windows hasn't been tested yet.
+- **Font list on macOS:** the typeface pickers are filled from fontconfig's `fc-list`,
+  which macOS doesn't ship. Without it the pickers only offer *Default*. Installing
+  fontconfig (`brew install fontconfig`) should fill them.
+- **Install scripts:** the scripts in `scripts/` create a Linux desktop entry and are Linux-only.
 - Task-list checkboxes in the preview are read-only. Edit `[ ]` / `[x]` in the source.
 - The sidebar lists only the current folder, not subfolders.
 - Exported math loads its fonts from a CDN.
