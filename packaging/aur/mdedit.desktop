@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=mdedit
+GenericName=Markdown Editor
+Comment=Lightweight Markdown editor with live preview
+Exec=mdedit %F
+Icon=mdedit
+Terminal=false
+Categories=Utility;TextEditor;
+MimeType=text/markdown;text/x-markdown;
+Keywords=markdown;md;editor;preview;
+StartupWMClass=mdedit

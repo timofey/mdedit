@@ -1,0 +1,84 @@
+# Maintainer: Timofey Klyubin <t dot klyubin at gmail dot com>
+
+pkgname=mdedit
+pkgver=1.0.1
+pkgrel=1
+pkgdesc='Lightweight Markdown editor with a GitHub-style live preview'
+arch=('x86_64')
+url='https://github.com/timofey/mdedit'
+license=('MIT')
+depends=(
+  'cairo'
+  'dbus'
+  'gdk-pixbuf2'
+  'glib2'
+  'glibc'
+  'gtk3'
+  'hicolor-icon-theme'
+  'libgcc'
+  'libsoup3'
+  'webkit2gtk-4.1'
+)
+makedepends=(
+  'cargo'
+  'nodejs'
+  'npm'
+)
+optdepends=('xdg-utils: open links and exported HTML in the default applications')
+source=(
+  "$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver/$pkgname-$pkgver.tar.gz"
+  'mdedit.desktop'
+)
+b2sums=('860c16aedd2741bae52061208acb0a40f6152eaf452e779229b5ad7190069694d8c7e988a5acf56fdfd95c9527d15efac3d129ff7c235edd553ac4d07a47d021'
+        'e246bbfbf339b16940f3886371e37a03ce8de28e947f53ebe91d812577de447b4a7ea1c17268174783522961571519b9a2353a7c2a6332ce02d1ef6209a18c29')
+
+# Let makepkg strip the binary and split off debug symbols (upstream strips in its release profile)
+export CARGO_PROFILE_RELEASE_STRIP=false
+
+prepare() {
+  cd "$pkgname-$pkgver"
+
+  export RUSTUP_TOOLCHAIN=stable
+  cargo fetch --locked --target host-tuple --manifest-path src-tauri/Cargo.toml
+
+  npm ci --cache "$srcdir/npm-cache" --no-audit --no-fund
+}
+
+build() {
+  cd "$pkgname-$pkgver"
+
+  # Frontend (Vite) into dist/, which the Tauri build embeds
+  npm run build
+
+  # Equivalent of `tauri build --no-bundle`, but offline and locked
+  export RUSTUP_TOOLCHAIN=stable
+  export CARGO_TARGET_DIR=target
+  cargo build --frozen --release --features tauri/custom-protocol \
+    --manifest-path src-tauri/Cargo.toml
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+
+  npm test
+
+  # finds_installed_fonts needs system fonts, which a clean chroot doesn't have
+  export RUSTUP_TOOLCHAIN=stable
+  export CARGO_TARGET_DIR=target
+  cargo test --frozen --manifest-path src-tauri/Cargo.toml -- --skip finds_installed_fonts
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+
+  install -vDm755 -t "$pkgdir/usr/bin" "target/release/$pkgname"
+  install -vDm644 -t "$pkgdir/usr/share/applications" "$srcdir/$pkgname.desktop"
+
+  install -vDm644 src-tauri/icons/32x32.png "$pkgdir/usr/share/icons/hicolor/32x32/apps/$pkgname.png"
+  install -vDm644 src-tauri/icons/64x64.png "$pkgdir/usr/share/icons/hicolor/64x64/apps/$pkgname.png"
+  install -vDm644 src-tauri/icons/128x128.png "$pkgdir/usr/share/icons/hicolor/128x128/apps/$pkgname.png"
+  install -vDm644 src-tauri/icons/128x128@2x.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/$pkgname.png"
+
+  install -vDm644 -t "$pkgdir/usr/share/doc/$pkgname" README.md
+  install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" LICENSE
+}

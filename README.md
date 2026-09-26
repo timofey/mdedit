@@ -153,6 +153,13 @@ Get the latest build from the [Releases page](https://github.com/timofey/mdedit/
 | Any Linux distro | `mdedit_*_amd64.AppImage` (`chmod +x`, then run it) |
 | Linux, plain binary | `mdedit-*-linux-x86_64.tar.gz` (needs WebKitGTK 4.1 installed) |
 
+**Arch Linux:** build a native package with the `PKGBUILD` in
+[`packaging/aur`](packaging/aur). An AUR package is coming soon.
+
+```sh
+git clone https://github.com/timofey/mdedit.git && cd mdedit/packaging/aur && makepkg -si
+```
+
 **Windows:** the installer isn't code-signed, so SmartScreen may show "Windows protected your PC".
 Click **More info**, then **Run anyway**.
 
