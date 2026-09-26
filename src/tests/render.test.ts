@@ -87,3 +87,21 @@ describe("renderMarkdown", () => {
     expect(doc.querySelector(".code-block")?.getAttribute("data-line")).not.toBeNull();
   });
 });
+
+describe("dollar signs", () => {
+  it("keeps currency amounts as text instead of math", () => {
+    const md = readFileSync(resolve(__dirname, "fixtures/currency.md"), "utf8");
+    const out = new DOMParser().parseFromString(renderMarkdown(md), "text/html");
+    expect(out.querySelectorAll(".katex").length).toBe(0);
+    const items = [...out.querySelectorAll("ol > li")].map((li) => li.textContent);
+    expect(items[0]).toContain("Net PPE of $4,743.00M and Operating Lease ROU Assets of $2,127.00M) total $6,870.00M");
+    expect(items[2]).toContain("from $24,460.00M in FY2022 to $21,764.00M in FY2026");
+    expect(out.querySelectorAll("ol strong").length).toBe(6);
+  });
+
+  it("still renders real inline math next to prices", () => {
+    const out = renderMarkdown("It costs $5 and $10, while $x^2$ is math.");
+    expect(out).toContain("$5 and $10");
+    expect((out.match(/class="katex"/g) ?? []).length).toBe(1);
+  });
+});

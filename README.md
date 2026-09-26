@@ -24,6 +24,12 @@ render well, but that's a lot of IDE to open for editing one README.
 mdedit is a single ~7.5 MB binary that opens instantly. Its preview renders like
 GitHub: GFM tables, highlighted code in every language, math, and Mermaid diagrams.
 
+**Complex documents are where mdedit shines.** Code blocks nested inside lists and
+quotes, tables mixing inline code and math, diagrams, alerts and footnotes all render
+correctly, even when they're combined in the same file. Text full of dollar amounts
+stays intact too, where other editors
+[turn it into math](#dollar-signs-stay-dollar-signs).
+
 ## Features
 
 - **GitHub-style rendering**: tables, task lists, footnotes, alerts, emoji, math, and Mermaid diagrams.
@@ -98,6 +104,18 @@ Clicking a link works like this:
 Relative image paths load from the file's folder.
 
 </details>
+
+### Dollar signs stay dollar signs
+
+Math support usually costs you your prices. Many editors, IntelliJ's Markdown preview
+among them, pair up any two `$` signs, so `$4,743.00M and ... $2,127.00M` becomes a
+run of italic math. mdedit follows [Pandoc's rules](https://pandoc.org/MANUAL.html#math):
+- an opening `$` must be followed by a non-space
+- a closing `$` must follow a non-space and can't be followed by a digit
+
+So financial reports keep their numbers, and `$x^2$` is still math.
+
+<img src="docs/screenshots/currency.png" alt="A financial summary with many dollar amounts, rendered as plain text next to its source" width="800">
 
 ### Export to HTML
 
